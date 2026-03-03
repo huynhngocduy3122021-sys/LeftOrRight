@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 43d62512053482a4aae58a09e80941e9, type: 3}
-  m_Name: GameLevel
+  m_Name: Game1
   m_EditorClassIdentifier: Assembly-CSharp::GameLevel
   listLevel:
   - {fileID: 11400000, guid: f181db97e42f1cf44af5af2b6d47074f, type: 2}
