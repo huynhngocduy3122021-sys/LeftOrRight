@@ -1,14 +1,17 @@
 using UnityEngine;
 using TMPro;
+using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class GameCOntroller : MonoBehaviour
 {
     public static GameCOntroller Instance;
     public TMP_Text questionText;
     public TMP_Text levelText;
-    public GameLevel gameList;
+    public List<GameLevel> gameLevelList;
 
-    private int currentLevel = 0;
+    private int currentLevel = 0;// quản lý level của màng chơi
+    private int currentQuestionIndex = 0;   // quản lí câu hỏi cảu màng chơi
     private string correctAnswer;
     
 
@@ -22,29 +25,40 @@ public class GameCOntroller : MonoBehaviour
 
     void Start()
     {
+        currentLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
+        currentQuestionIndex = 0;
         LoadLevel();
     }
 
     void LoadLevel()
     {
-        if (currentLevel >= gameList.listLevel.Count)
+        if (currentLevel >= gameLevelList.Count)
         {
             Debug.Log("You win!");
+
+             PlayerPrefs.DeleteKey("CurrentLevel"); // xoá cả màng chơi để chơi lại từ đầu
+             SceneManager.LoadScene("StartGame");
             return;
         }
 
-        var levelData = gameList.listLevel[currentLevel];
+        GameLevel levelData = gameLevelList[currentLevel];
 
-        // Cập nhật UI
-        levelText.text = $"Màn: {currentLevel + 1}";
-        questionText.text = $"{levelData.numberA} ? {levelData.numberB}";
+        if(currentQuestionIndex >= levelData.listLevel.Count)
+        {
+            Debug.Log("Hoàn thành level " + currentLevel);
+            currentLevel++;
+            PlayerPrefs.SetInt("CurrentLevel", currentLevel);
+            SceneManager.LoadScene("Win"); // tải lại scene để load level mới
+            return;
+        }
 
-        // Tính đáp án đúng
-        correctAnswer = levelData.numberA < levelData.numberB ? "<" : ">";
+        GameData questionData = levelData.listLevel[currentQuestionIndex];
 
+        questionText.text =  $"{questionData.numberA} ? {questionData.numberB}";
+        levelText.text = $"Màng: {currentLevel + 1}";
+        correctAnswer = questionData.numberA < questionData.numberB ? "<": ">";
         isProcessing = false;
-
-        
+  
         
     }
 
@@ -58,7 +72,7 @@ public class GameCOntroller : MonoBehaviour
         if (playerAnswer == correctAnswer)
         {
             Debug.Log("Đúng rồi!");
-            currentLevel++;
+            currentQuestionIndex++;
             
         }
         else

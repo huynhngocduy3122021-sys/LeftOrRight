@@ -5,6 +5,7 @@ public class MenuController : MonoBehaviour
 {
     public void StartGame()
     {
+        PlayerPrefs.SetInt("CurrentLevel", 0);
         loadingController.LoadScene("GamePlay");
     }
     
@@ -18,14 +19,13 @@ public class MenuController : MonoBehaviour
     public void NextLevel()
     {
         Time.timeScale = 1;
-        int currentLevel = PlayerPrefs.GetInt("Level", 1);
-        PlayerPrefs.SetInt("Level", currentLevel + 1);
-        loadingController.LoadScene("GamePlay");
+        SceneManager.LoadScene("GamePlay");
     }
 
     public void TryAgain()
     {
         Time.timeScale = 1;
+        PlayerPrefs.SetInt("CurrentLevel", 0); // reset level về 0 để chơi lại từ đầu
         loadingController.LoadScene("GamePlay");
     }
 
