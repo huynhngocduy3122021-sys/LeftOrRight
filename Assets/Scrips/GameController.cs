@@ -17,16 +17,28 @@ public class GameCOntroller : MonoBehaviour
 
     public bool isProcessing = false;
     public CharacterController playerController;
+    public TimeController timeController;
 
     private void Awake()
     {
         Instance = this;
+
+        if(timeController != null)
+        {
+            timeController.startTimer();
+        }
+        
     }
 
     void Start()
     {
         currentLevel = PlayerPrefs.GetInt("CurrentLevel", 0);
         currentQuestionIndex = 0;
+
+        if(timeController != null)
+        {
+            timeController.OnTimeUp = TimeOut;
+        }
         LoadLevel();
     }
 
@@ -58,6 +70,8 @@ public class GameCOntroller : MonoBehaviour
         levelText.text = $"Màng: {currentLevel + 1}";
         correctAnswer = questionData.numberA < questionData.numberB ? "<": ">";
         isProcessing = false;
+
+       
   
         
     }
@@ -68,6 +82,8 @@ public class GameCOntroller : MonoBehaviour
             return;
 
         isProcessing = true;
+
+        
 
         if (playerAnswer == correctAnswer)
         {
@@ -85,6 +101,15 @@ public class GameCOntroller : MonoBehaviour
 
         Invoke(nameof(LoadLevel), 1.5f);
     }
+    
+    private void TimeOut()
+    {
+       
 
+        Debug.Log("Hết giờ! Thử lại.");
+        isProcessing = true;
+        playerController.ResetPosition();
+        SceneManager.LoadScene("Lose");
+    }
 
 }
