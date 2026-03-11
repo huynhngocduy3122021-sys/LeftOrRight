@@ -71,7 +71,7 @@ public class GameCOntroller : MonoBehaviour
         GameData questionData = levelData.listLevel[currentQuestionIndex];
 
         questionText.text =  $"{questionData.numberA} ? {questionData.numberB}";
-        levelText.text = $"Màng: {currentLevel + 1}";
+        levelText.text = $"Màn: {currentLevel + 1}";
         correctAnswer = questionData.numberA < questionData.numberB ? "<": ">";
         isProcessing = false;
 
