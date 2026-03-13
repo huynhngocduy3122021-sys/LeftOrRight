@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+
 public class AnimationBall : MonoBehaviour
 {
     [Header("Ball Component")]
@@ -9,22 +10,17 @@ public class AnimationBall : MonoBehaviour
     private Quaternion originalRotation;
     private Vector3 originalLocalPosition;
     
-    // Biến để theo dõi animation đang chạy, giúp tránh xung đột
     private Coroutine currentAnimation;
 
     void Start()
     {
         if (ballTransform == null) ballTransform = transform;
         
-        // Lưu lại các thông số ban đầu
         originalScale = ballTransform.localScale;
         originalRotation = ballTransform.localRotation;
         originalLocalPosition = ballTransform.localPosition;
     }
 
-    /// <summary>
-    /// Gọi hàm này khi người chơi trả lời ĐÚNG
-    /// </summary>
     public void PlayCorrectAnimation()
     {
         if (currentAnimation != null) StopCoroutine(currentAnimation);
@@ -32,9 +28,6 @@ public class AnimationBall : MonoBehaviour
         currentAnimation = StartCoroutine(CorrectRoutine());
     }
 
-    /// <summary>
-    /// Gọi hàm này khi người chơi trả lời SAI
-    /// </summary>
     public void PlayIncorrectAnimation()
     {
         if (currentAnimation != null) StopCoroutine(currentAnimation);
@@ -49,29 +42,28 @@ public class AnimationBall : MonoBehaviour
         ballTransform.localPosition = originalLocalPosition;
     }
 
-    // --- CÁC HÀM XỬ LÝ HIỆU ỨNG THUẦN UNITY ---
-
+    // --- HIỆU ỨNG THẮNG (Tổng 2.0s) ---
     private IEnumerator CorrectRoutine()
     {
-        float duration = 0.4f;
+        float duration = 1.5f; 
         float elapsed = 0f;
         Vector3 targetScale = originalScale * 1.5f;
 
-        // Bước 1: Phóng to và xoay lộn vòng
+        // Bước 1: Phóng to và xoay lộn vòng (1.5 giây)
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
             
             ballTransform.localScale = Vector3.Lerp(originalScale, targetScale, t);
-            ballTransform.Rotate(0, 0, -360 * Time.deltaTime / duration); // Xoay vòng
+            ballTransform.Rotate(0, 0, -1080 * Time.deltaTime / duration); 
             
             yield return null;
         }
 
-        // Bước 2: Nảy thu nhỏ về kích thước ban đầu
+        // Bước 2: Nảy thu nhỏ về kích thước ban đầu (0.5 giây)
         elapsed = 0f;
-        duration = 0.2f;
+        duration = 0.5f; 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
@@ -83,42 +75,65 @@ public class AnimationBall : MonoBehaviour
         ResetBallState();
     }
 
+    // --- HIỆU ỨNG THUA: XẸP VÀ LẢO ĐẢO (Tổng 2.0s) ---
     private IEnumerator IncorrectRoutine()
     {
-        float duration = 0.4f;
-        float elapsed = 0f;
-        Vector3 targetScale = originalScale * 0.8f; // Hơi xẹp xuống
+        // Thông số mục tiêu khi bị xẹp
+        Vector3 targetSquashScale = new Vector3(originalScale.x * 1.3f, originalScale.y * 0.4f, originalScale.z);
+        Vector3 targetDropPos = originalLocalPosition + new Vector3(0, -0.5f, 0);
 
-        // Bước 1: Lắc qua lại (dùng sóng Sin) và xẹp xuống
-        while (elapsed < duration)
+        // Giai đoạn 1: Rớt xuống và bóp dẹt (0.5 giây)
+        float elapsed = 0f;
+        float duration1 = 0.5f;
+        while (elapsed < duration1)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / duration;
-
-            // Tính toán độ lắc theo trục X
-            float shakeX = Mathf.Sin(t * Mathf.PI * 6) * 0.2f; 
-            ballTransform.localPosition = originalLocalPosition + new Vector3(shakeX, 0, 0);
-
-            // Bóng xẹp xuống
-            ballTransform.localScale = Vector3.Lerp(originalScale, targetScale, t);
-
+            float t = elapsed / duration1;
+            
+            ballTransform.localScale = Vector3.Lerp(originalScale, targetSquashScale, t);
+            ballTransform.localPosition = Vector3.Lerp(originalLocalPosition, targetDropPos, t);
+            
             yield return null;
         }
 
-        // Bước 2: Phục hồi vị trí và kích thước
+        // Đảm bảo thông số chuẩn xác khi kết thúc Phase 1
+        ballTransform.localScale = targetSquashScale;
+        ballTransform.localPosition = targetDropPos;
+
+        // Giai đoạn 2: Lắc lư lảo đảo "chóng mặt" (1.0 giây)
         elapsed = 0f;
-        duration = 0.15f;
-        while (elapsed < duration)
+        float duration2 = 1.0f;
+        while (elapsed < duration2)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / duration;
             
-            ballTransform.localScale = Vector3.Lerp(targetScale, originalScale, t);
-            ballTransform.localPosition = Vector3.Lerp(ballTransform.localPosition, originalLocalPosition, t);
+            // Dùng sóng Sin để tạo góc xoay trục Z qua lại (biên độ 30 độ)
+            float angleZ = Mathf.Sin(elapsed * Mathf.PI * 6) * 30f; 
+            ballTransform.localRotation = originalRotation * Quaternion.Euler(0, 0, angleZ);
+            
+            yield return null;
+        }
+
+        // Đưa góc xoay về thẳng đứng trước khi nhảy lên
+        ballTransform.localRotation = originalRotation;
+
+        // Giai đoạn 3: Bật dậy, khôi phục trạng thái cũ (0.5 giây)
+        elapsed = 0f;
+        float duration3 = 0.5f;
+        while (elapsed < duration3)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration3;
+            
+            // Làm mềm chuyển động (Ease Out) bằng hàm Sin
+            float easeT = Mathf.Sin(t * Mathf.PI * 0.5f);
+            
+            ballTransform.localScale = Vector3.Lerp(targetSquashScale, originalScale, easeT);
+            ballTransform.localPosition = Vector3.Lerp(targetDropPos, originalLocalPosition, easeT);
             
             yield return null;
         }
 
         ResetBallState();
     }
-}
+}git
