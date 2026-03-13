@@ -131,13 +131,7 @@ public class GameCOntroller : MonoBehaviour
             Time.timeScale = 0f; // dừng game
         }
     }
-    public void CloseTutorial()
-    {
-    tutorialPanel.SetActive(false);
-    Time.timeScale = 1f;
-
-    PlayerPrefs.SetInt("TutorialShown",1);
-    }
+   
 
     
 
