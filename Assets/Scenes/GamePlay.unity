@@ -2188,7 +2188,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e1c27ee2318d774b86e2a708a14c3d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TimeController
-  time: 120
+  time: 40
   timeText: {fileID: 1323999135}
 --- !u!4 &1888246287
 Transform:
